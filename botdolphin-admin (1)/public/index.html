@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BotDolphin Admin</title>
+<link rel="icon" type="image/png" href="https://botdolphin.com/images/favicon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#181b24;--bg3:#1f2330;--bg4:#272c3a;
+  --border:#2a2f3e;--border2:#353b4d;
+  --text:#e8eaf0;--text2:#9ca3b5;--text3:#6b7280;
+  --primary:#7c5cfc;--primary2:#6b4fdb;--primary-bg:rgba(124,92,252,.1);
+  --green:#34d399;--green-bg:rgba(52,211,153,.1);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,.1);
+  --orange:#fbbf24;--orange-bg:rgba(251,191,36,.1);
+  --red:#f87171;--red-bg:rgba(248,113,113,.1);
+  --pink:#f472b6;--cyan:#22d3ee;
+  --r:8px;--r2:12px;--r3:16px;
+  --font:'DM Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --shadow:0 4px 24px rgba(0,0,0,.3);
+}
+html,body,#root{height:100%;font-family:var(--font);background:var(--bg);color:var(--text)}
+a{color:var(--primary);text-decoration:none}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* Layout */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sb-brand{padding:20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.sb-brand img{width:32px;height:32px;border-radius:8px}
+.sb-brand h1{font-size:.95rem;font-weight:700;color:var(--text)}
+.sb-brand small{display:block;font-size:.65rem;color:var(--text3);font-weight:400}
+.sb-nav{flex:1;padding:12px;overflow-y:auto}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);font-size:.85rem;color:var(--text2);cursor:pointer;transition:.15s;margin-bottom:2px;font-weight:500}
+.sb-item:hover{background:var(--bg3);color:var(--text)}
+.sb-item.active{background:var(--primary-bg);color:var(--primary)}
+.sb-item .icon{width:18px;text-align:center;font-size:.9rem}
+.sb-section{font-size:.65rem;color:var(--text3);padding:16px 12px 6px;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.sb-footer{padding:16px;border-top:1px solid var(--border);font-size:.7rem;color:var(--text3)}
+
+/* Main */
+.main{flex:1;overflow-y:auto;padding:0}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg2);position:sticky;top:0;z-index:10}
+.topbar h2{font-size:1.1rem;font-weight:700}.topbar-r{display:flex;align-items:center;gap:10px}
+.content{padding:24px 28px}
+
+/* Cards */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px;transition:.2s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-icon{width:36px;height:36px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:10px}
+.stat-val{font-size:1.7rem;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.stat-label{font-size:.75rem;color:var(--text3);margin-top:2px}
+.stat-change{font-size:.72rem;font-weight:600;margin-top:6px;display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px}
+.stat-change.up{color:var(--green);background:var(--green-bg)}
+.stat-change.down{color:var(--red);background:var(--red-bg)}
+
+/* Chart */
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:14px}
+.chart-card h3{font-size:.88rem;font-weight:600;margin-bottom:14px;color:var(--text)}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+
+/* Tables */
+.table-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:14px}
+.table-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.table-header h3{font-size:.88rem;font-weight:600}
+.table-tools{display:flex;gap:8px;align-items:center}
+.search-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px 12px;color:var(--text);font-size:.78rem;outline:none;width:200px;font-family:var(--font)}
+.search-box:focus{border-color:var(--primary)}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 14px;text-align:left;font-size:.72rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--text)}
+td{padding:10px 14px;font-size:.82rem;color:var(--text2);border-bottom:1px solid var(--border);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:hover td{background:rgba(124,92,252,.02);color:var(--text)}
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--r);font-size:.7rem;font-weight:600}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-orange{background:var(--orange-bg);color:var(--orange)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-purple{background:var(--primary-bg);color:var(--primary)}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:.78rem;color:var(--text3)}
+.pag-btns{display:flex;gap:4px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);font-size:.78rem;font-weight:600;cursor:pointer;transition:.15s;border:1px solid transparent;font-family:var(--font)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border-color:var(--border)}
+.btn-secondary:hover{background:var(--bg4);color:var(--text)}
+.btn-green{background:var(--green-bg);color:var(--green);border-color:rgba(52,211,153,.2)}
+.btn-green:hover{background:rgba(52,211,153,.18)}
+.btn-sm{padding:4px 10px;font-size:.72rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* SQL Console */
+.sql-area{width:100%;min-height:100px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;color:var(--green);font-family:var(--mono);font-size:.82rem;resize:vertical;outline:none}
+.sql-area:focus{border-color:var(--primary)}
+
+/* Login */
+.login-wrap{display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg)}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:40px;width:380px;max-width:90vw;text-align:center;box-shadow:var(--shadow)}
+.login-card img{width:48px;height:48px;border-radius:12px;margin-bottom:16px}
+.login-card h2{margin-bottom:4px;font-size:1.2rem}.login-card p{color:var(--text3);font-size:.85rem;margin-bottom:24px}
+.login-input{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:.88rem;outline:none;margin-bottom:12px;font-family:var(--font)}
+.login-input:focus{border-color:var(--primary)}
+.login-err{color:var(--red);font-size:.78rem;margin-bottom:10px}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:-1px}
+.tab{padding:8px 16px;font-size:.82rem;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--text)}.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* Responsive */
+@media(max-width:768px){.sidebar{width:60px}.sidebar .sb-item span,.sb-brand h1,.sb-brand small,.sb-section,.sb-footer{display:none}.sb-brand{padding:16px 14px;justify-content:center}.sb-item{justify-content:center;padding:10px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── API Helper ──
+const api = async (url, opts = {}) => {
+  const res = await fetch(url, { ...opts, headers: { 'Content-Type': 'application/json', ...opts.headers } });
+  if (res.status === 401) throw new Error('UNAUTHORIZED');
+  return res;
+};
+
+// ── Login Screen ──
+function Login({ onLogin }) {
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
+  const submit = async (e) => {
+    e.preventDefault(); setLoading(true); setErr('');
+    try {
+      const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) });
+      if (r.ok) onLogin(); else setErr('Invalid password');
+    } catch { setErr('Connection error'); }
+    setLoading(false);
+  };
+  return (
+    <div className="login-wrap">
+      <form className="login-card" onSubmit={submit}>
+        <img src="https://botdolphin.com/images/logo.png" alt="BotDolphin" />
+        <h2>Admin Dashboard</h2>
+        <p>Enter your admin password to continue</p>
+        {err && <div className="login-err">{err}</div>}
+        <input className="login-input" type="password" placeholder="Admin password..." value={pw} onChange={e => setPw(e.target.value)} autoFocus />
+        <button className="btn btn-primary" style={{ width: '100%', padding: '11px', fontSize: '.88rem' }} disabled={loading}>{loading ? 'Checking...' : 'Sign In →'}</button>
+      </form>
+    </div>
+  );
+}
+
+// ── Chart Component ──
+function ChartComponent({ type, data, options, height = 220 }) {
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+  useEffect(() => {
+    if (chartRef.current) chartRef.current.destroy();
+    if (!canvasRef.current || !data) return;
+    const ctx = canvasRef.current.getContext('2d');
+    chartRef.current = new Chart(ctx, {
+      type, data,
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', font: { size: 10 } } },
+          y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', font: { size: 10 } }, beginAtZero: true }
+        },
+        ...options
+      }
+    });
+    return () => { if (chartRef.current) chartRef.current.destroy(); };
+  }, [data]);
+  return <div style={{ height }}><canvas ref={canvasRef} /></div>;
+}
+
+// ── Dashboard Page ──
+function Dashboard({ stats }) {
+  if (!stats) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text3)' }}>Loading stats...</div>;
+
+  const signupData = stats.signups_daily ? {
+    labels: stats.signups_daily.map(d => new Date(d.day).toLocaleDateString('en', { month: 'short', day: 'numeric' })),
+    datasets: [{ label: 'Signups', data: stats.signups_daily.map(d => parseInt(d.count)), borderColor: '#7c5cfc', backgroundColor: 'rgba(124,92,252,.1)', tension: .4, fill: true, pointRadius: 3 }]
+  } : null;
+
+  const monthlyData = stats.signups_monthly ? {
+    labels: stats.signups_monthly.map(d => d.month),
+    datasets: [{ label: 'Signups', data: stats.signups_monthly.map(d => parseInt(d.count)), backgroundColor: 'rgba(124,92,252,.6)', borderRadius: 6, barPercentage: .6 }]
+  } : null;
+
+  const planData = stats.plans ? {
+    labels: stats.plans.map(p => p.plan || 'Free'),
+    datasets: [{ data: stats.plans.map(p => parseInt(p.count)), backgroundColor: ['#7c5cfc', '#34d399', '#60a5fa', '#fbbf24', '#f472b6', '#22d3ee'] }]
+  } : null;
+
+  return (
+    <div>
+      <div className="stat-grid">
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--primary-bg)' }}>👥</div>
+          <div className="stat-val">{(stats.total_users || 0).toLocaleString()}</div>
+          <div className="stat-label">Total Users</div>
+          {stats.signups_7d != null && <div className="stat-change up">+{stats.signups_7d} this week</div>}
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--green-bg)' }}>📊</div>
+          <div className="stat-val">{(stats.signups_30d || 0).toLocaleString()}</div>
+          <div className="stat-label">Signups (30 days)</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--blue-bg)' }}>🤖</div>
+          <div className="stat-val">{(stats.total_chatbots || 0).toLocaleString()}</div>
+          <div className="stat-label">Total Chatbots</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--orange-bg)' }}>💬</div>
+          <div className="stat-val">{(stats.total_messages || 0).toLocaleString()}</div>
+          <div className="stat-label">Total Messages</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'var(--red-bg)' }}>📋</div>
+          <div className="stat-val">{(stats.total_leads || 0).toLocaleString()}</div>
+          <div className="stat-label">Total Leads</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon" style={{ background: 'rgba(34,211,238,.1)' }}>🗣</div>
+          <div className="stat-val">{(stats.total_conversations || 0).toLocaleString()}</div>
+          <div className="stat-label">Conversations</div>
+        </div>
+      </div>
+
+      <div className="chart-row">
+        {signupData && <div className="chart-card"><h3>📈 Daily Signups (30 days)</h3><ChartComponent type="line" data={signupData} /></div>}
+        {monthlyData && <div className="chart-card"><h3>📊 Monthly Signups</h3><ChartComponent type="bar" data={monthlyData} /></div>}
+      </div>
+
+      <div className="chart-row">
+        {planData && <div className="chart-card"><h3>🎯 Plan Distribution</h3><ChartComponent type="doughnut" data={planData} options={{ scales: undefined, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#9ca3b5', font: { size: 11 } } } } }} height={260} /></div>}
+        <div className="chart-card">
+          <h3>📋 Database Tables</h3>
+          <div style={{ maxHeight: 260, overflow: 'auto' }}>
+            {stats.tables?.map(t => (
+              <div key={t} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--border)', fontSize: '.82rem' }}>
+                <span style={{ color: 'var(--text)', fontFamily: 'var(--mono)' }}>{t}</span>
+                <span style={{ color: 'var(--text3)' }}>{(stats[`${t}_count`] || 0).toLocaleString()} rows</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {stats.latest_users && (
+        <div className="table-card">
+          <div className="table-header"><h3>🆕 Latest Signups</h3></div>
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <thead><tr>{Object.keys(stats.latest_users[0] || {}).map(k => <th key={k}>{k}</th>)}</tr></thead>
+              <tbody>{stats.latest_users.map((u, i) => (
+                <tr key={i}>{Object.values(u).map((v, j) => <td key={j}>{v === null ? '—' : typeof v === 'object' ? JSON.stringify(v) : String(v).length > 50 ? String(v).slice(0, 50) + '…' : String(v)}</td>)}</tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Table Browser ──
+function TableBrowser({ tableName, schema }) {
+  const [data, setData] = useState(null);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState('');
+  const [dir, setDir] = useState('desc');
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    if (!tableName) return;
+    setLoading(true);
+    try {
+      const r = await api(`/api/table/${tableName}?page=${page}&search=${encodeURIComponent(search)}&sort=${sort}&dir=${dir}`);
+      setData(await r.json());
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  }, [tableName, page, search, sort, dir]);
+
+  useEffect(() => { setPage(1); }, [tableName, search]);
+  useEffect(() => { load(); }, [load]);
+
+  const doSort = (col) => {
+    if (sort === col) setDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSort(col); setDir('desc'); }
+  };
+
+  const exportCSV = () => {
+    window.open(`/api/export/${tableName}`, '_blank');
+  };
+
+  if (!data) return <div style={{ padding: 30, color: 'var(--text3)' }}>{loading ? 'Loading...' : 'Select a table'}</div>;
+  const totalPages = Math.ceil(data.total / data.limit);
+
+  return (
+    <div className="table-card">
+      <div className="table-header">
+        <h3 style={{ fontFamily: 'var(--mono)', fontSize: '.85rem' }}>{tableName} <span style={{ color: 'var(--text3)', fontWeight: 400 }}>({data.total.toLocaleString()} rows)</span></h3>
+        <div className="table-tools">
+          <input className="search-box" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
+          <button className="btn btn-green btn-sm" onClick={exportCSV}>⬇ Export CSV</button>
+        </div>
+      </div>
+      <div style={{ overflowX: 'auto', maxHeight: '60vh' }}>
+        <table>
+          <thead><tr>{data.columns.map(c => (
+            <th key={c} onClick={() => doSort(c)}>
+              {c} {sort === c ? (dir === 'asc' ? '↑' : '↓') : ''}
+            </th>
+          ))}</tr></thead>
+          <tbody>
+            {data.rows.map((row, i) => (
+              <tr key={i}>{data.columns.map(c => {
+                let v = row[c];
+                if (v === null) return <td key={c} style={{ color: 'var(--text3)', fontStyle: 'italic' }}>null</td>;
+                if (typeof v === 'boolean') return <td key={c}><span className={v ? 'badge badge-green' : 'badge badge-red'}>{v ? 'true' : 'false'}</span></td>;
+                if (typeof v === 'object') v = JSON.stringify(v);
+                const s = String(v);
+                // Format dates
+                if (/^\d{4}-\d{2}-\d{2}T/.test(s)) return <td key={c} title={s}>{new Date(s).toLocaleString()}</td>;
+                return <td key={c} title={s.length > 40 ? s : undefined}>{s.length > 60 ? s.slice(0, 60) + '…' : s}</td>;
+              })}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="pagination">
+        <span>Page {page} of {totalPages} · {data.total} total rows</span>
+        <div className="pag-btns">
+          <button className="btn btn-secondary btn-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+          <button className="btn btn-secondary btn-sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SQL Console ──
+function SqlConsole() {
+  const [sql, setSql] = useState('SELECT * FROM users LIMIT 20;');
+  const [result, setResult] = useState(null);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const run = async () => {
+    setLoading(true); setErr(''); setResult(null);
+    try {
+      const r = await api('/api/query', { method: 'POST', body: JSON.stringify({ sql }) });
+      const d = await r.json();
+      if (d.error) setErr(d.error); else setResult(d);
+    } catch (e) { setErr(e.message); }
+    setLoading(false);
+  };
+
+  return (
+    <div>
+      <div className="chart-card">
+        <h3>🔍 SQL Console <span style={{ color: 'var(--text3)', fontWeight: 400, fontSize: '.75rem' }}>(SELECT only)</span></h3>
+        <textarea className="sql-area" value={sql} onChange={e => setSql(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) run(); }} placeholder="SELECT * FROM users LIMIT 10;" />
+        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+          <button className="btn btn-primary" onClick={run} disabled={loading}>{loading ? 'Running...' : '▶ Execute'}</button>
+          <span style={{ fontSize: '.72rem', color: 'var(--text3)', alignSelf: 'center' }}>Ctrl+Enter to run</span>
+        </div>
+      </div>
+      {err && <div style={{ padding: 14, background: 'var(--red-bg)', border: '1px solid rgba(248,113,113,.2)', borderRadius: 'var(--r2)', color: 'var(--red)', fontSize: '.82rem', marginBottom: 14 }}>{err}</div>}
+      {result && (
+        <div className="table-card">
+          <div className="table-header"><h3>{result.rowCount} row{result.rowCount !== 1 ? 's' : ''}</h3></div>
+          <div style={{ overflowX: 'auto', maxHeight: '50vh' }}>
+            <table>
+              <thead><tr>{result.columns.map(c => <th key={c}>{c}</th>)}</tr></thead>
+              <tbody>{result.rows.map((row, i) => (
+                <tr key={i}>{result.columns.map(c => {
+                  let v = row[c];
+                  if (v === null) return <td key={c} style={{ color: 'var(--text3)' }}>null</td>;
+                  if (typeof v === 'object') v = JSON.stringify(v);
+                  const s = String(v);
+                  return <td key={c}>{s.length > 80 ? s.slice(0, 80) + '…' : s}</td>;
+                })}</tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Export Page ──
+function ExportPage({ schema }) {
+  const tables = Object.keys(schema || {});
+  return (
+    <div>
+      <div className="chart-card">
+        <h3>⬇ Export Data to CSV</h3>
+        <p style={{ color: 'var(--text2)', fontSize: '.85rem', marginBottom: 16 }}>Click any table to download all data as CSV.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 10 }}>
+          {tables.map(t => (
+            <button key={t} className="btn btn-secondary" onClick={() => window.open(`/api/export/${t}`, '_blank')} style={{ justifyContent: 'space-between' }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: '.78rem' }}>{t}</span>
+              <span>⬇</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ──
+function App() {
+  const [authed, setAuthed] = useState(null);
+  const [page, setPage] = useState('dashboard');
+  const [stats, setStats] = useState(null);
+  const [schema, setSchema] = useState(null);
+  const [selectedTable, setSelectedTable] = useState('');
+
+  useEffect(() => {
+    fetch('/api/check-auth').then(r => setAuthed(r.ok)).catch(() => setAuthed(false));
+  }, []);
+
+  useEffect(() => {
+    if (!authed) return;
+    api('/api/stats').then(r => r.json()).then(setStats).catch(() => {});
+    api('/api/schema').then(r => r.json()).then(setSchema).catch(() => {});
+  }, [authed]);
+
+  if (authed === null) return <div className="login-wrap"><div style={{ color: 'var(--text3)' }}>Loading...</div></div>;
+  if (!authed) return <Login onLogin={() => setAuthed(true)} />;
+
+  const tables = Object.keys(schema || {});
+  const logout = async () => { await fetch('/api/logout', { method: 'POST' }); setAuthed(false); };
+
+  const menuItems = [
+    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+    { id: 'users', icon: '👥', label: 'Users' },
+    { id: 'export', icon: '⬇', label: 'Export CSV' },
+    { id: 'sql', icon: '🔍', label: 'SQL Console' },
+  ];
+
+  const pageTitle = { dashboard: 'Dashboard', users: 'Users & Signups', export: 'Export Data', sql: 'SQL Console', table: `Table: ${selectedTable}` };
+
+  return (
+    <div className="app">
+      <div className="sidebar">
+        <div className="sb-brand">
+          <img src="https://botdolphin.com/images/logo.png" alt="" />
+          <h1>BotDolphin<small>Admin Panel</small></h1>
+        </div>
+        <div className="sb-nav">
+          <div className="sb-section">Main</div>
+          {menuItems.map(m => (
+            <div key={m.id} className={`sb-item ${page === m.id ? 'active' : ''}`} onClick={() => setPage(m.id)}>
+              <span className="icon">{m.icon}</span><span>{m.label}</span>
+            </div>
+          ))}
+          <div className="sb-section">Database Tables</div>
+          {tables.map(t => (
+            <div key={t} className={`sb-item ${page === 'table' && selectedTable === t ? 'active' : ''}`} onClick={() => { setSelectedTable(t); setPage('table'); }}>
+              <span className="icon">📁</span><span>{t}</span>
+            </div>
+          ))}
+        </div>
+        <div className="sb-footer">
+          <div className="sb-item" onClick={logout}><span className="icon">🚪</span><span>Logout</span></div>
+        </div>
+      </div>
+      <div className="main">
+        <div className="topbar">
+          <h2>{pageTitle[page] || 'Dashboard'}</h2>
+          <div className="topbar-r">
+            <button className="btn btn-secondary btn-sm" onClick={() => { api('/api/stats').then(r=>r.json()).then(setStats); }}>🔄 Refresh</button>
+          </div>
+        </div>
+        <div className="content">
+          {page === 'dashboard' && <Dashboard stats={stats} />}
+          {page === 'users' && <TableBrowser tableName={stats?.user_table || 'users'} schema={schema} />}
+          {page === 'table' && <TableBrowser tableName={selectedTable} schema={schema} />}
+          {page === 'export' && <ExportPage schema={schema} />}
+          {page === 'sql' && <SqlConsole />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
+</html>
