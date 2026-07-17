@@ -1,0 +1,11 @@
+:8080 {
+    root * /srv
+    file_server
+    try_files {path} /index.html
+    encode gzip
+    header {
+        X-Frame-Options DENY
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+}
